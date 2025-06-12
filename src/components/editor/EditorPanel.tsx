@@ -287,7 +287,7 @@ export const EditorPanel = ({ portfolioData, onUpdateData, onClose }: EditorPane
                   </div>
                 </CardContent>
               </Card>
-            </TabContent>
+            </TabsContent>
           </Tabs>
         </div>
       </ScrollArea>
