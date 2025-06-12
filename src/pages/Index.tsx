@@ -1,14 +1,17 @@
 
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { PortfolioRenderer } from "@/components/portfolio/PortfolioRenderer";
-import { EditorSidebar } from "@/components/editor/EditorSidebar";
+import { PromoPrompt } from "@/components/PromoPrompt";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { portfolioTemplates } from "@/data/portfolioTemplates";
 import { Button } from "@/components/ui/button";
-import { Edit, Eye, Download, Share2 } from "lucide-react";
+import { Edit, Eye, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const [isEditing, setIsEditing] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
   const [portfolioData, setPortfolioData] = useState(portfolioTemplates.modern.data);
 
@@ -17,21 +20,14 @@ const Index = () => {
     setPortfolioData(portfolioTemplates[templateId].data);
   };
 
-  const handleExport = () => {
-    // Future: Export portfolio as HTML/React code
-    console.log("Export functionality coming soon");
-  };
-
-  const handleShare = () => {
-    // Future: Generate shareable link
-    console.log("Share functionality coming soon");
-  };
-
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-background">
+        {/* Show promo prompt only to non-authenticated users */}
+        {!user && <PromoPrompt />}
+
         {/* Top Control Bar */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
+        <div className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b">
           <div className="flex items-center justify-between px-4 py-2">
             <div className="flex items-center gap-4">
               <h1 className="text-lg font-bold">Portfolio Builder</h1>
@@ -47,45 +43,34 @@ const Index = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" onClick={handleShare}>
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Button
-                size="sm"
-                variant={isEditing ? "default" : "outline"}
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                {isEditing ? <Eye className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
-                {isEditing ? "Preview" : "Edit"}
-              </Button>
+              {user ? (
+                <>
+                  <Button size="sm" onClick={() => navigate("/dashboard")}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Button>
+                  <Button size="sm" onClick={() => navigate("/dashboard/settings")}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Settings
+                  </Button>
+                </>
+              ) : (
+                <Button size="sm" onClick={() => navigate("/auth")}>
+                  <User className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="pt-16 flex">
-          {/* Editor Sidebar */}
-          {isEditing && (
-            <EditorSidebar 
-              portfolioData={portfolioData}
-              onUpdateData={setPortfolioData}
-              template={selectedTemplate}
-            />
-          )}
-
-          {/* Portfolio Renderer */}
-          <div className={`flex-1 transition-all duration-300 ${isEditing ? "ml-80" : ""}`}>
-            <PortfolioRenderer 
-              data={portfolioData}
-              template={selectedTemplate}
-              isEditing={isEditing}
-            />
-          </div>
+        {/* Portfolio Renderer */}
+        <div className="pt-16">
+          <PortfolioRenderer 
+            data={portfolioData}
+            template={selectedTemplate}
+            isEditing={false}
+          />
         </div>
       </div>
     </ThemeProvider>
