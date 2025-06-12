@@ -20,7 +20,7 @@ export const PromoPrompt = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 animate-slide-in-from-right">
+    <div className="fixed top-20 right-4 z-50 animate-slide-in-from-right">
       <Card className="p-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg max-w-sm">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-2">

@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { useSearchParams } from "react-router-dom";
+import { EditorSidebar } from "@/components/editor/EditorSidebar";
+import { PortfolioRenderer } from "@/components/portfolio/PortfolioRenderer";
+import { portfolioTemplates } from "@/data/portfolioTemplates";
 import { 
   Settings, 
   Globe, 
@@ -16,11 +19,80 @@ import {
   Palette,
   Code,
   Database,
-  Github
+  Github,
+  X
 } from "lucide-react";
 
 export const SettingsPage = () => {
-  const [activeTab, setActiveTab] = useState("project");
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "project");
+  const [showEditor, setShowEditor] = useState(false);
+  const [portfolioData, setPortfolioData] = useState(portfolioTemplates.modern.data);
+  const [selectedTemplate, setSelectedTemplate] = useState("modern");
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "editor") {
+      setActiveTab("editor");
+      setShowEditor(true);
+    }
+  }, [searchParams]);
+
+  const handleUpdateData = (newData: any) => {
+    setPortfolioData(newData);
+  };
+
+  if (showEditor) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Editor Header */}
+        <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-4">
+              <h1 className="text-lg font-semibold">Portfolio Editor</h1>
+              <select 
+                value={selectedTemplate}
+                onChange={(e) => setSelectedTemplate(e.target.value)}
+                className="px-3 py-1 rounded-md border bg-background text-sm"
+              >
+                <option value="modern">Modern Template</option>
+                <option value="minimal">Minimal Template</option>
+                <option value="creative">Creative Template</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                Save Changes
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowEditor(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Editor Layout */}
+        <div className="flex pt-16">
+          <EditorSidebar 
+            portfolioData={portfolioData}
+            onUpdateData={handleUpdateData}
+            template={selectedTemplate}
+          />
+          <div className="flex-1 ml-80">
+            <PortfolioRenderer 
+              data={portfolioData}
+              template={selectedTemplate}
+              isEditing={true}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -80,7 +152,10 @@ export const SettingsPage = () => {
               <Button
                 variant={activeTab === "editor" ? "default" : "ghost"}
                 className="w-full justify-start"
-                onClick={() => setActiveTab("editor")}
+                onClick={() => {
+                  setActiveTab("editor");
+                  setShowEditor(true);
+                }}
               >
                 <Palette className="h-4 w-4 mr-2" />
                 Portfolio Editor
@@ -120,7 +195,6 @@ export const SettingsPage = () => {
           {activeTab === "knowledge" && <KnowledgeSettings />}
           {activeTab === "people" && <PeopleSettings />}
           {activeTab === "billing" && <BillingSettings />}
-          {activeTab === "editor" && <EditorSettings />}
           {activeTab === "supabase" && <SupabaseSettings />}
           {activeTab === "github" && <GitHubSettings />}
         </div>
